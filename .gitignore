@@ -1,0 +1,6 @@
+__pycache__
+.vscode
+lambda/py_deps/
+lambda/lambda.zip
+deploy/.terraform
+deploy/.terraform.tfstate*
