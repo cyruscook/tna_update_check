@@ -7,6 +7,7 @@ from html import escape
 from base64 import b64decode
 
 from storage.monitored import get_monitored_records, put_monitored_records
+from storage.redirs import get_redir
 from tna.records import get_record_by_ref
 from website.responses import RESPONSE_404, build_view_response
 
@@ -21,6 +22,8 @@ def handle_web_request(sess, s3, request) -> object:
             return handle_view(s3, request)
         elif path == "/edit" and method == "post":
             return handle_edit(sess, s3, request)
+        elif path.startswith("/redir/") and method == "get":
+            return handle_redir(s3, path[len("/redir/"):])
         
         return create_reponse(404, RESPONSE_404)
     except Exception as e:
@@ -83,6 +86,10 @@ def handle_edit(sess, s3, request) -> object:
     edit_msg = urllib.parse.quote(edit_msg, safe="")
     return create_reponse(303, "", redirect=f"/?edit_msg={edit_msg}")
 
+
+def handle_redir(s3, key) -> object:
+    redir = get_redir(s3, key)
+    return create_reponse(308, "", redirect=redir)
 
 def create_reponse(status: int, body: str, redirect: str | None = None) -> object:
     out = {

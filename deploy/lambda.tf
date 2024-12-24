@@ -16,7 +16,7 @@ resource "aws_iam_role" "lambda_role" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
-data "aws_iam_policy_document" "lambda_access_s3" {
+data "aws_iam_policy_document" "lambda_access" {
   statement {
     effect = "Allow"
 
@@ -31,16 +31,34 @@ data "aws_iam_policy_document" "lambda_access_s3" {
       "${aws_s3_bucket.storage_bucket.arn}/*"
     ]
   }
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sns:Publish*"
+    ]
+
+    resources = [aws_sns_topic.changes.arn]
+  }
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "lambda:GetFunctionUrlConfig"
+    ]
+
+    resources = [aws_lambda_function.monitor_lambda.arn]
+  }
 }
 
-resource "aws_iam_policy" "lambda_access_s3" {
+resource "aws_iam_policy" "lambda_access" {
   name_prefix = "tna-monitor-lambda-access-policy-"
-  policy      = data.aws_iam_policy_document.lambda_access_s3.json
+  policy      = data.aws_iam_policy_document.lambda_access.json
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_access_s3" {
+resource "aws_iam_role_policy_attachment" "lambda_access" {
   role       = aws_iam_role.lambda_role.name
-  policy_arn = aws_iam_policy.lambda_access_s3.arn
+  policy_arn = aws_iam_policy.lambda_access.arn
 }
 
 variable "function_filename" {
@@ -67,7 +85,12 @@ resource "aws_lambda_function" "monitor_lambda" {
     variables = {
       LOGLEVEL       = "DEBUG"
       STORAGE_BUCKET = aws_s3_bucket.storage_bucket.bucket
+      SNS_TOPIC      = aws_sns_topic.changes.arn
     }
+  }
+
+  dead_letter_config {
+    target_arn = aws_sns_topic.changes.arn
   }
 }
 
