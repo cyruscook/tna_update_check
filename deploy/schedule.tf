@@ -1,19 +1,19 @@
 resource "aws_scheduler_schedule" "check" {
-  name_prefix      = "tna-check-"
-  
+  name_prefix = "tna-check-"
+
   flexible_time_window {
-    mode = "FLEXIBLE"
+    mode                      = "FLEXIBLE"
     maximum_window_in_minutes = 30
   }
 
   schedule_expression = "cron(0 3 * * ? *)"
-  state = "ENABLED"
+  state               = "ENABLED"
 
   target {
     arn      = aws_lambda_function.monitor_lambda.arn
     role_arn = aws_iam_role.scheduler.arn
     input = jsonencode({
-        action = "check"
+      action = "check"
     })
   }
 }
@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "sched_assume_role" {
 }
 
 resource "aws_iam_role" "scheduler" {
-  name_prefix = "sched-"
+  name_prefix        = "sched-"
   assume_role_policy = data.aws_iam_policy_document.sched_assume_role.json
 }
 
@@ -57,5 +57,5 @@ data "aws_iam_policy_document" "schedule_access" {
 
 resource "aws_iam_policy" "scheduler" {
   name_prefix = "sched-"
-  policy = data.aws_iam_policy_document.schedule_access.json
+  policy      = data.aws_iam_policy_document.schedule_access.json
 }

@@ -14,6 +14,7 @@ from website.responses import RESPONSE_404, build_view_response
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(os.environ.get("LOGLEVEL", "INFO").upper())
 
+
 def handle_web_request(sess, s3, request) -> object:
     path = request["rawPath"]
     try:
@@ -23,17 +24,22 @@ def handle_web_request(sess, s3, request) -> object:
         elif path == "/edit" and method == "post":
             return handle_edit(sess, s3, request)
         elif path.startswith("/redir/") and method == "get":
-            return handle_redir(s3, path[len("/redir/"):])
-        
+            return handle_redir(s3, path[len("/redir/") :])
+
         return create_reponse(404, RESPONSE_404)
     except Exception as e:
         LOGGER.exception("Error handling web request")
-        return create_reponse(500, escape(repr(e)) + "\n<pre>" + escape(traceback.format_exc()) + "</pre>")
+        return create_reponse(
+            500, escape(repr(e)) + "\n<pre>" + escape(traceback.format_exc()) + "</pre>"
+        )
 
 
 def handle_view(s3, request) -> object:
     edit_msg = None
-    if "queryStringParameters" in request and "edit_msg" in request["queryStringParameters"]:
+    if (
+        "queryStringParameters" in request
+        and "edit_msg" in request["queryStringParameters"]
+    ):
         edit_msg = request["queryStringParameters"]["edit_msg"]
     records, etag = get_monitored_records(s3)
     return create_reponse(200, build_view_response(records, etag, edit_msg))
@@ -60,7 +66,7 @@ def handle_edit(sess, s3, request) -> object:
         new_record = get_record_by_ref(sess, new_ref)
         if any(r["id"] == new_record["id"] for r in records):
             raise Exception("Already in records")
-        
+
         records.append(new_record)
         ref = new_record["citableReference"]
         edit_msg = f"Successfully added record {ref}"
@@ -69,7 +75,7 @@ def handle_edit(sess, s3, request) -> object:
         remove_action = next(k for k in body if k.startswith("action-remove-"))
         if not remove_action:
             raise Exception("No remove actions to process")
-        
+
         rem_id = remove_action[len("action-remove-") :]
         LOGGER.info("Removing item %s", rem_id)
 
@@ -90,6 +96,7 @@ def handle_edit(sess, s3, request) -> object:
 def handle_redir(s3, key) -> object:
     redir = get_redir(s3, key)
     return create_reponse(308, "", redirect=redir)
+
 
 def create_reponse(status: int, body: str, redirect: str | None = None) -> object:
     out = {

@@ -11,7 +11,9 @@ from storage.redirs import put_redir
 JDIFF = "https://benjamine.github.io/jsondiffpatch/index.html?desc=diff&left={left}&right={right}"
 
 
-def check_record(sess: requests.Session, record: object) -> tuple[object, tuple[str, str] | None]:
+def check_record(
+    sess: requests.Session, record: object
+) -> tuple[object, tuple[str, str] | None]:
     id = record["id"]
     newr = get_record_by_id(sess, id)
     oldj = json.dumps(record, sort_keys=True)
@@ -20,14 +22,18 @@ def check_record(sess: requests.Session, record: object) -> tuple[object, tuple[
         return (newr, None)
     return (newr, (oldj, newj))
 
+
 def alert_for_record(s3, furl: str, record: object, oldj: str, newj: str) -> str:
     id = record["id"]
     ref = record["citableReference"]
     catlink = get_link_by_id(id)
-    difflink = JDIFF.format(left=urllib.parse.quote(oldj), right=urllib.parse.quote(newj))
+    difflink = JDIFF.format(
+        left=urllib.parse.quote(oldj), right=urllib.parse.quote(newj)
+    )
     redirkey = urllib.parse.quote(put_redir(s3, difflink), safe="")
     difflink = f"{furl}redir/{redirkey}"
     return f"{ref} ({catlink}) has changed: {difflink}"
+
 
 def check_records(sess: requests.Session, s3, sns, furl: str):
     with ThreadPoolExecutor(max_workers=5) as executor:
@@ -38,12 +44,13 @@ def check_records(sess: requests.Session, s3, sns, furl: str):
             jobs.append(executor.submit(check_record, sess, item))
 
         res = [job.result() for job in jobs]
-    
+
     records = [r for r, m in res]
     put_monitored_records(s3, etag, records)
 
-    mismatched = [(r, alert_for_record(s3, furl, r, m[0], m[1])) for r, m in res if m is not None]
+    mismatched = [
+        (r, alert_for_record(s3, furl, r, m[0], m[1])) for r, m in res if m is not None
+    ]
     for r, msg in mismatched:
         ref = r["citableReference"]
         publish_change(sns, f"Change in {ref}", msg)
-
