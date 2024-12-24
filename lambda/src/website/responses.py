@@ -82,7 +82,7 @@ def build_view_response(
 
     records = map(record_to_html, records)
 
-    out = RESPONSE_VIEW_START + "".join(records) + RESPONSE_VIEW_ADD
+    out = RESPONSE_VIEW_START + RESPONSE_VIEW_ADD + "".join(records)
     out += etag_html + RESPONSE_FORM_END
     if succesful_edit:
         succesful_edit = escape(succesful_edit)
