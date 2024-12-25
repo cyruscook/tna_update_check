@@ -70,7 +70,7 @@ def handle_edit(sess, s3, request) -> object:
         id = new_record["id"]
         # id/ref endpoints return different JSON
         # Need to refetch from id endpoint
-        new_record = get_record_by_id(id)
+        new_record = get_record_by_id(sess, id)
         ref = new_record["citableReference"]
         records.append(new_record)
         edit_msg = f"Successfully added record {ref}"
