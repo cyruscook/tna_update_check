@@ -8,7 +8,7 @@ from base64 import b64decode
 
 from storage.monitored import get_monitored_records, put_monitored_records
 from storage.redirs import get_redir
-from tna.records import get_record_by_ref
+from tna.records import get_record_by_ref, get_record_by_id
 from website.responses import RESPONSE_404, build_view_response
 
 LOGGER = logging.getLogger(__name__)
@@ -66,9 +66,13 @@ def handle_edit(sess, s3, request) -> object:
         new_record = get_record_by_ref(sess, new_ref)
         if any(r["id"] == new_record["id"] for r in records):
             raise Exception("Already in records")
-
-        records.append(new_record)
+        
+        id = new_record["id"]
+        # id/ref endpoints return different JSON
+        # Need to refetch from id endpoint
+        new_record = get_record_by_id(id)
         ref = new_record["citableReference"]
+        records.append(new_record)
         edit_msg = f"Successfully added record {ref}"
     else:
         # Removing a record - find which
