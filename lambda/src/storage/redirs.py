@@ -1,5 +1,6 @@
 import json
 import uuid
+import datetime
 
 from storage.monitored import STORAGE_BUCKET
 
@@ -21,10 +22,15 @@ def put_redir(s3, dest: str) -> str:
         Key=REDIRS_KEY,
     )
     body = json.loads(resp["Body"].read())
-    key = str(uuid.uuid4())
+
+    datestr = datetime.datetime.now().strftime("%Y-%m-%d")
+    uuidstr = str(uuid.uuid4())
+    key = f"{datestr}/{uuidstr}"
     body[key] = dest
+
+    bodystr = json.dumps(body, sort_keys=True).encode("utf-8")
     s3.put_object(
-        Body=json.dumps(body).encode("utf-8"),
+        Body=bodystr,
         Bucket=STORAGE_BUCKET,
         Key=REDIRS_KEY,
         ContentType="application/json; charset=utf-8",
