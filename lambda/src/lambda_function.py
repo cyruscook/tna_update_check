@@ -26,6 +26,7 @@ def lambda_handler(event, context):
     lamc = boto3.client("lambda")
     sess = requests.Session()
     sess.mount("https://", HTTPAdapter(max_retries=2))
+    sess.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
 
     furl = lamc.get_function_url_config(FunctionName=context.function_name)[
         "FunctionUrl"
