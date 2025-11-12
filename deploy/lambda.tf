@@ -94,6 +94,8 @@ resource "aws_lambda_function" "monitor_lambda" {
   }
 }
 
+// TODO: aws_lambda_permission (blocked by https://github.com/hashicorp/terraform-provider-aws/pull/44858)
+
 resource "aws_lambda_function_url" "monitor_lambda" {
   function_name      = aws_lambda_function.monitor_lambda.function_name
   authorization_type = "NONE"
