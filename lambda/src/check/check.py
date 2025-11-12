@@ -1,12 +1,13 @@
-import requests
 import json
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
 
-from tna.records import get_record_by_id, get_link_by_id
-from storage.monitored import get_monitored_records, put_monitored_records
+import requests
+
 from check.alert import publish_change
+from storage.monitored import get_monitored_records, put_monitored_records
 from storage.redirs import put_redir
+from tna.records import get_link_by_id, get_record_by_id
 
 JDIFF = "https://benjamine.github.io/jsondiffpatch/index.html?desc=diff&left={left}&right={right}"
 
@@ -30,7 +31,7 @@ def alert_for_record(s3, furl: str, record: object, oldj: str, newj: str) -> str
     difflink = JDIFF.format(
         left=urllib.parse.quote(oldj), right=urllib.parse.quote(newj)
     )
-    redirkey = urllib.parse.quote(put_redir(s3, difflink), safe="")
+    redirkey = put_redir(s3, difflink)
     difflink = f"{furl}redir/{redirkey}"
     return f"{ref} ({catlink}) has changed: {difflink}"
 
