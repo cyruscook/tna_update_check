@@ -1,15 +1,16 @@
-import requests
 import urllib.parse
+from typing import Any
 
+import requests
 from tna.constants import (
     TNA_API,
     TNA_RECORD_DETAILS,
-    TNA_RECORDS_DETAILS,
     TNA_RECORDS_COLLECTION,
+    TNA_RECORDS_DETAILS,
 )
 
 
-def get_record_by_id(sess: requests.Session, id: str):
+def get_record_by_id(sess: requests.Session, id: str) -> Any:
     resp = sess.get(
         f"{TNA_API}{TNA_RECORDS_DETAILS}".format(id=urllib.parse.quote(id, safe=""))
     )
@@ -18,7 +19,7 @@ def get_record_by_id(sess: requests.Session, id: str):
     return resp
 
 
-def get_record_by_ref(sess: requests.Session, ref: str) -> object:
+def get_record_by_ref(sess: requests.Session, ref: str) -> Any:
     resp = sess.get(
         f"{TNA_API}{TNA_RECORDS_COLLECTION}".format(
             reference=urllib.parse.quote(ref, safe="")

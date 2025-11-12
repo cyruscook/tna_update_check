@@ -1,14 +1,14 @@
 import json
-import os
 import logging
-import urllib.parse
+import os
 import traceback
-from html import escape
+import urllib.parse
 from base64 import b64decode
+from html import escape
 
 from storage.monitored import get_monitored_records, put_monitored_records
 from storage.redirs import get_redir
-from tna.records import get_record_by_ref, get_record_by_id
+from tna.records import get_record_by_id, get_record_by_ref
 from website.responses import RESPONSE_404, build_view_response
 
 LOGGER = logging.getLogger(__name__)
@@ -24,7 +24,8 @@ def handle_web_request(sess, s3, request) -> object:
         elif path == "/edit" and method == "post":
             return handle_edit(sess, s3, request)
         elif path.startswith("/redir/") and method == "get":
-            return handle_redir(s3, path[len("/redir/") :])
+            key = urllib.parse.unquote(path[len("/redir/") :])
+            return handle_redir(s3, key)
 
         return create_reponse(404, RESPONSE_404)
     except Exception as e:
@@ -66,7 +67,7 @@ def handle_edit(sess, s3, request) -> object:
         new_record = get_record_by_ref(sess, new_ref)
         if any(r["id"] == new_record["id"] for r in records):
             raise Exception("Already in records")
-        
+
         id = new_record["id"]
         # id/ref endpoints return different JSON
         # Need to refetch from id endpoint
