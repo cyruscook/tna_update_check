@@ -5,13 +5,19 @@ cd "$(dirname "$0")"
 
 rm -f lambda.zip
 
-mkdir -p py_deps
-cd py_deps
-pip install --platform manylinux2014_aarch64 --implementation cp --python-version 3.13 --only-binary=:all: --upgrade --target . -r ../requirements.txt
-zip -r ../lambda.zip ./**
+uv export --frozen --no-dev --no-editable -o requirements.txt
+uv pip install \
+   --no-installer-metadata \
+   --no-compile-bytecode \
+   --python-platform aarch64-manylinux2014 \
+   --python 3.13 \
+   --target packages \
+   -r requirements.txt
+
+cd packages
+zip -r ../lambda.zip .
 cd ..
-rm -rf py_deps
 
 cd src
-zip -r ../lambda.zip ./**
+zip -r ../lambda.zip .
 cd ..
