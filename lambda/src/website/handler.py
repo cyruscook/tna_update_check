@@ -5,6 +5,7 @@ import traceback
 import urllib.parse
 from base64 import b64decode
 from html import escape
+from typing import Any
 
 from storage.monitored import get_monitored_records, put_monitored_records
 from storage.redirs import get_redir
@@ -27,6 +28,7 @@ def handle_web_request(sess, s3, request) -> object:
             key = urllib.parse.unquote(path[len("/redir/") :])
             return handle_redir(s3, key)
 
+        LOGGER.warning("Unknown request path", extra={"path": path, "method": method})
         return create_reponse(404, RESPONSE_404)
     except Exception as e:
         LOGGER.exception("Error handling web request")
@@ -48,12 +50,12 @@ def handle_view(s3, request) -> object:
 
 def handle_edit(sess, s3, request) -> object:
     body = request["body"]
-    if "isBase64Encoded" in request and request["isBase64Encoded"] == True:
+    if "isBase64Encoded" in request and request["isBase64Encoded"]:
         body = b64decode(body).decode("utf-8")
     body = urllib.parse.parse_qs(body)
 
     old_etag = body["old-etag"][0]
-    records: list[object] = json.loads(b64decode(body["old-records"][0]))
+    records: list[Any] = json.loads(b64decode(body["old-records"][0]))
 
     edit_msg = None
 

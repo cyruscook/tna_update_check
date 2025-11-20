@@ -89,6 +89,12 @@ resource "aws_lambda_function" "monitor_lambda" {
     }
   }
 
+  logging_config {
+    log_format            = "JSON"
+    application_log_level = "DEBUG"
+    system_log_level      = "INFO"
+  }
+
   dead_letter_config {
     target_arn = aws_sns_topic.changes.arn
   }

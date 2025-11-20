@@ -1,6 +1,7 @@
-from html import escape
-from base64 import b64encode
 import json
+from base64 import b64encode
+from html import escape
+from typing import Any
 
 from tna.records import get_link_by_id
 
@@ -9,7 +10,7 @@ RESPONSE_404 = """
 <html>
     <head>
         <title>404 Not Found</title>
-    </head>    
+    </head>
     <body>
         <h1>404 Not Found</h1>
     </body>
@@ -21,7 +22,7 @@ RESPONSE_VIEW_START = """
 <html>
     <head>
         <title>TNA Monitor</title>
-    </head>    
+    </head>
     <body>
         <h1>TNA Monitor - Monitored Records:</h1>
         <form action="/edit" method="post">
@@ -53,7 +54,7 @@ RESPONSE_VIEW_END = """
 
 
 def build_view_response(
-    records: list[object], etag: str, succesful_edit: str | None = None
+    records: list[Any], etag: str, succesful_edit: str | None = None
 ) -> str:
     # First sort records
     records.sort(key=lambda record: record["citableReference"])
@@ -80,9 +81,9 @@ def build_view_response(
         </div>
         """
 
-    records = map(record_to_html, records)
+    records_html = map(record_to_html, records)
 
-    out = RESPONSE_VIEW_START + RESPONSE_VIEW_ADD + "".join(records)
+    out = RESPONSE_VIEW_START + RESPONSE_VIEW_ADD + "".join(records_html)
     out += etag_html + RESPONSE_FORM_END
     if succesful_edit:
         succesful_edit = escape(succesful_edit)
