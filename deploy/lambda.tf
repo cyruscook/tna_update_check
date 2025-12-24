@@ -77,7 +77,7 @@ resource "aws_lambda_function" "monitor_lambda" {
   handler       = "lambda_function.lambda_handler"
   architectures = ["arm64"]
   runtime       = "python3.13"
-  timeout       = 15
+  timeout       = 15 * 60 // 15 minutes
 
   source_code_hash = filebase64sha256(local.function_path)
 
