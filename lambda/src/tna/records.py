@@ -2,6 +2,7 @@ import urllib.parse
 from typing import Any
 
 import requests
+
 from tna.constants import (
     TNA_API,
     TNA_RECORD_DETAILS,
@@ -9,10 +10,13 @@ from tna.constants import (
     TNA_RECORDS_DETAILS,
 )
 
+REQ_TIMEOUT = 30  # 30 seconds
+
 
 def get_record_by_id(sess: requests.Session, id: str) -> Any:
     resp = sess.get(
-        f"{TNA_API}{TNA_RECORDS_DETAILS}".format(id=urllib.parse.quote(id, safe=""))
+        f"{TNA_API}{TNA_RECORDS_DETAILS}".format(id=urllib.parse.quote(id, safe="")),
+        timeout=REQ_TIMEOUT,
     )
     resp.raise_for_status()
     resp = resp.json()
@@ -23,7 +27,8 @@ def get_record_by_ref(sess: requests.Session, ref: str) -> Any:
     resp = sess.get(
         f"{TNA_API}{TNA_RECORDS_COLLECTION}".format(
             reference=urllib.parse.quote(ref, safe="")
-        )
+        ),
+        timeout=REQ_TIMEOUT,
     )
     resp.raise_for_status()
     resp = resp.json()

@@ -46,6 +46,7 @@ def lambda_handler(event, context):
             # Check records
             LOGGER.debug("checking records")
             check_records(sess, s3, sns, furl)
+            LOGGER.info("successfully checked records")
         else:
             raise Exception("Unknown action")
     except Exception as e:
